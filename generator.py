@@ -1,6 +1,5 @@
 theme = "my"
-slide_header ='<section data-auto-animate style="height: 600px">'
-refs=["dist/reveal.css","dist/theme/white.css","plugin/highlight/stackoverflow.css","dist/mystyle.css"]
+refs=["dist/reveal.css","dist/theme/white.css","plugin/highlight/stackoverflow.css","dist/theme1.css"]
 
 '''
 #HTML PAge
@@ -69,31 +68,31 @@ def make_tag(tag,properties=[],body=""):
   else:
     return "<"+tag+" "+properties+">"+body+"</"+tag+">"
 
-def generate_shape(shape,properties=[],frag=True,frag_idx=-1,frag_type="",data_id=-1,style=""):
-  class_prop = make_class_property([make_fragment_classes(frag,frag_type), theme+'-'+shape]) 
+def generate_shape(shape,properties=[],classes=[],frag=True,frag_idx=-1,frag_type="",data_id=-1,style=""):
+  class_prop = make_class_property([make_fragment_classes(frag,frag_type), theme+'-'+shape]+classes) 
   properties.append(class_prop) 
   properties.append(make_properties([make_fragment_properties(frag_idx,data_id)])) 
   properties.append(make_style_string(style))
 
   return make_tag("div",properties,"")          
 
-def generate_text(text,tag="p",properties=[],frag=True,frag_idx=-1,frag_type="",data_id=-1,style=""):
-  class_prop = make_class_property([make_fragment_classes(frag,frag_type)])
+def generate_text(text,tag="p",properties=[],classes=[],frag=True,frag_idx=-1,frag_type="",data_id=-1,style=""):
+  class_prop = make_class_property([make_fragment_classes(frag,frag_type)]+classes)
   properties.append(class_prop)
   properties.append(make_properties([make_fragment_properties(frag_idx,data_id)])) 
   properties.append(make_style_string(style))
 
   return make_tag(tag,properties,text)          
 
-def generate_img(src,properties=[],frag=True,frag_idx=-1,frag_type="",data_id=-1,style=""):
+def generate_img(src,properties=[],classes=[],frag=True,frag_idx=-1,frag_type="",data_id=-1,style=""):
   properties.append("src='"+src+"'")
-  return generate_text("","img",properties,frag,frag_idx,frag_type,data_id,style)
+  return generate_text("","img",properties,classes,frag,frag_idx,frag_type,data_id,style)
 
-def generate_slide(body,properties,style):
-  return generate_text("\n"+body,"section",properties,False,-1,"",-1,style)
+def generate_slide(body,properties,style,classes):
+  return generate_text("\n"+body,"section",properties,classes,False,-1,"",-1,style)
 
 def generate_script(src):
-  return make_tag("script",['src="'+src],'"')
+  return make_tag("script",['src="'+src+'"'],"")
 
 '''
 REVEAL JS wrapper 
@@ -146,9 +145,9 @@ Slide Styles
 #ROADMAP
 
 def generate_roadmap_slide(title,roadmap,colors,shape="diamond",connect=True):
-  title_attr =generate_text(title,"h3",[],False,-1,"",-1,"") 
+  title_attr =generate_text(title,"h3",[],[],False,-1,"",-1,"") 
   body = title_attr+"\n"+generate_roadmap(roadmap,colors,shape,connect)
-  return generate_slide(body,["data-auto-animate","data-auto-animate-unmatched='fade-up'"],"height:600px")
+  return generate_slide(body,["data-auto-animate","data-auto-animate-unmatched='fade-up'"],"height:600px",[])
 
 def generate_roadmap(text,colors,shape="diamond",connect=True):
   roadmap = ""
@@ -158,35 +157,35 @@ def generate_roadmap(text,colors,shape="diamond",connect=True):
   try:
     for idx,value in enumerate(text):
       if idx != 0 and connect:
-        curr_bullet += generate_shape("rmvline",[],True,idx+1,"fade-down",-1,"top:"+str(base)+"px;")+"\n"
-      curr_bullet += generate_shape(shape,[],True,idx+1,"fade-down",idx+1,"background:"+colors[idx]+";top:"+str(base+(distance/2))+"px;")+"\n"
-      curr_bullet += generate_text(value,"div",[],True,idx+1,"fade-down",-1,"top:"+str(base+33)+"px;")+"\n\n"
+        curr_bullet += generate_shape("rmvline",[],[],True,idx+1,"fade-down",-1,"top:"+str(base)+"px;")+"\n"
+      curr_bullet += generate_shape(shape,[],[],True,idx+1,"fade-down",idx+1,"background:"+colors[idx]+";top:"+str(base+(distance/2))+"px;")+"\n"
+      curr_bullet += generate_text(value,"div",[],[theme+"-rm-data"],True,idx+1,"fade-down",-1,"top:"+str(base+33)+"px;")+"\n\n"
       base+=distance
       roadmap+=curr_bullet
       curr_bullet=""
   except IndexError:  
-      curr_bullet += generate_shape(shape,True,idx+1,"fade-down",idx+1,"background:"+colors[len(text)-1]+";top:"+str(base+(distance/2))+"px;")+"\n"
-      curr_bullet += generate_text(value,"div",True,idx+1,"fade-down",idx+1,"top:"+str(base+33)+"px;")+"\n\n"
+      curr_bullet += generate_shape(shape,[],[],True,idx+1,"fade-down",idx+1,"background:"+colors[len(text)-1]+";top:"+str(base+(distance/2))+"px;")+"\n"
+      curr_bullet += generate_text(value,"div",[],[theme+"-rm-data"],True,idx+1,"fade-down",-1,"top:"+str(base+33)+"px;")+"\n\n"
       roadmap+=curr_bullet
       
   return roadmap
 
 #TITLE
 def generate_title_slide(title,subtitle,img="",title_style="",subtitle_style="",img_style="",order=[0,1,2]):
-  title_attr =generate_text(title,"h1",[],False,-1,"",-1,title_style) 
-  subtitle_attr = generate_text(subtitle,"h3",[],False,-1,"",-1,subtitle_style)
-  img_attr = generate_img(img,[],False,-1,"",-1,img_style)
+  title_attr =generate_text(title,"h1",[],[],False,-1,"",-1,title_style) 
+  subtitle_attr = generate_text(subtitle,"h3",[],[],False,-1,"",-1,subtitle_style)
+  img_attr = generate_img(img,[],[],False,-1,"",-1,img_style)
   attrs = [title_attr,subtitle_attr,img_attr]
   body = ""
   for i in order:
     body += attrs[i]+"\n"   
-  return generate_slide(body,["data-auto-animate","data-auto-animate-unmatched='fade-up'"],"")
+  return generate_slide(body,["data-auto-animate","data-auto-animate-unmatched='fade-up'"],"",[])
 
 # WRITE TO FILE 
 def generate_slides(src_file):
   #TODO actually have to write the parser lol
   rm = (generate_roadmap_slide("sets, functions, relations",["person of the week","countability","set proofs"],["purple","blue","orange"],"rm-diamond",True))
-  tit =(generate_title_slide("CMSC250","sets, functions, relations","dis/assests/funcpun.jpg","","","height:300px",[0,1,2]))
+  tit =(generate_title_slide("CMSC250","sets, functions, relations","dist/assets/funcpun.jpeg","","","height:300px",[0,1,2]))
   return generate_html(refs,tit+"\n"+rm)
 
 f = open("myslides.html", "w")
