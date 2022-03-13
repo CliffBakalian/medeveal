@@ -8,3 +8,5 @@ This should have 3 parts:
 + The converter
 + the generator 
 
+This is currently written in python because I need this done relatively quickly, and I don't have the time to learn haskell
+or learn racket file I/O. But ultimately I would prefer to do this in a functional language (maybe racket or haskell)
