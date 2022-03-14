@@ -4,6 +4,10 @@ import re
 The regexes for certain things. This is ultimately gross and I 
 need a more efficient way of doing this
 '''
+
+# empty string all os
+# newline_re = re.compile("^\r?\n$") # no longer needed
+
 # formatting
 style_re = re.compile("(#\s?(([\w\-]+:[\w\-%]+;)+))") #gross
 properties_re = re.compile("(((\-[0-9a-zA-Z_\-]+)\s?)+)$") #gross
@@ -32,11 +36,27 @@ title_slide_re = re.compile("### Title ###")
 rm_slide_re = re.compile("### ROADMAP ###")
 pow_slide_re = re.compile("### POW ###") #person of the week
 
+# because all os are equal....nah linux ftw
+def remove_newline(line):
+  if line[-1] == "\n":
+    line[:-1]
+  if line[-1] == "\r":
+    line[:-1]
+  return line
+
 def parse_roadmap(f):
- line = f.readline()
+  line = f.readline()
+  rm = []
+  while re.match(end_slide_re,line) != None:
+    (lambda x: rm.append(x) if x != "" else None)(remove_newline(line))
+  return rm
 
 def parse_title(f):
- line = f.readline()
+  line = f.readline()
+  rm = []
+  while re.match(end_slide_re,line) != None:
+    (lambda x: rm.append(x) if x != "" else None)(remove_newline(line))
+  return rm
 
 def parse_pow(f):
  line = f.readline()
