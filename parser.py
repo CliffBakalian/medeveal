@@ -60,4 +60,7 @@ def parse_title(f):
 
 def parse_pow(f):
  line = f.readline()
+ rm = []
 
+def parse_regex(f):
+  line = 
