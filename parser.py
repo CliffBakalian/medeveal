@@ -1,5 +1,5 @@
 import re
-
+import generator
 '''
 The regexes for certain things. This is ultimately gross and I 
 need a more efficient way of doing this
@@ -12,7 +12,7 @@ need a more efficient way of doing this
 style_re = re.compile("(#\s?(([\w\-]+:[\w\-%]+;)+))") #gross
 properties_re = re.compile("(((\-[0-9a-zA-Z_\-]+)\s?)+)$") #gross
 property_re = re.compile("(((-[\w\-]+)\s?)+)$") #take properties from properties
-fragment_re = re.compile("^\s*?`match(:([0-9]+))?") #fragment with number
+fragment_re = re.compile("^\s*?`match(:\s?([0-9]+))?`") #fragment with number
 
 # things in slides
 image_rs = re.compile("`src=[\w\-\.\"'\\\/]*`") #images
@@ -44,12 +44,36 @@ def remove_newline(line):
     line[:-1]
   return line
 
-def parse_roadmap(f):
+def parse_line(line)
+  data = ""
+  properties = []
+  style = []
+  f = re.match(fragment_re, line)
+  if f != None
+    style.append("fragment")
+    f_id = r.group(2) 
+    if f_id != None:
+      properties.append("data-fragment-index="+str(f_id))    
+   
+  
+# parse an entire slide making list of all data lines, properties, and style per line
+def parse_slide(f):
   line = f.readline()
-  rm = []
+  slide_data= []
   while re.match(end_slide_re,line) != None:
-    (lambda x: rm.append(x) if x != "" else None)(remove_newline(line))
-  return rm
+    line_data = ""
+    line_properties=[]
+    line_style=[]
+    (lambda x: line_data,line_properties,line_style = parse_line(x) if x != "" else None)(remove_newline(line))
+    data.append(line_data)
+    properties.append(line_properties)
+    style.append(line_style) 
+    line = f.readline()
+  return data,properties,style
+
+def parse_roadmap(f):
+  data,properties,style = parse_slide(f)
+  generate_roadmap_slide(slide_data,colors,properties,style)
 
 def parse_title(f):
   line = f.readline()
@@ -60,7 +84,4 @@ def parse_title(f):
 
 def parse_pow(f):
  line = f.readline()
- rm = []
 
-def parse_regex(f):
-  line = 
