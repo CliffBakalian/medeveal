@@ -143,12 +143,12 @@ Slide Styles
 
 #ROADMAP
 
-def generate_roadmap_slide(title,roadmap,colors,shape="diamond",connect=True):
+def generate_roadmap_slide(title,roadmap,colors,properties=[[]],style=[[]],shape="diamond",connect=True):
   title_attr =generate_text(title,"h3",[],[],False,-1,"",-1,"") 
-  body = title_attr+generate_roadmap(roadmap,colors,shape,connect)
+  body = title_attr+generate_roadmap(roadmap,colors,properties,style,shape,connect)
   return generate_slide(body,["data-auto-animate","data-auto-animate-unmatched='fade-up'"],"height:600px",[])
 
-def generate_roadmap(text,colors,shape="diamond",connect=True):
+def generate_roadmap(text,colors,properties,style,shape="diamond",connect=True):
   roadmap = ""
   curr_bullet =""
   distance = 80
@@ -158,7 +158,7 @@ def generate_roadmap(text,colors,shape="diamond",connect=True):
       if idx != 0 and connect:
         curr_bullet += generate_shape("rmvline",[],[],True,idx+1,"fade-down",-1,"top:"+str(base)+"px;")
       curr_bullet += generate_shape(shape,[],[],True,idx+1,"",idx+1,"background:"+colors[idx]+";top:"+str(base+(distance/2))+"px;")
-      curr_bullet += generate_text(value,"div",[],["rm-data"],True,idx+1,"fade-down",-1,"top:"+str(base+33)+"px;")
+      curr_bullet += generate_text(value,"div",properties[idx],["rm-data"]+style[idx],True,idx+1,"fade-down",-1,"top:"+str(base+33)+"px;")
       base+=distance
       roadmap+=curr_bullet
       curr_bullet=""
@@ -205,7 +205,7 @@ TIME TO EXPORT
 # WRITE TO FILE 
 def generate_slides(src_file):
   #TODO actually have to write the parser lol
-  rm = (generate_roadmap_slide("sets, functions, relations",["person of the week","countability","set proofs"],["purple","blue","orange"],"rm-diamond",True))
+  rm = (generate_roadmap_slide("sets, functions, relations",["person of the week","countability","set proofs"],["purple","blue","orange"],[[]],[[]],"rm-diamond",True))
   tit =(generate_title_slide("CMSC250","sets, functions, relations","dist/assets/funcpun.jpeg","","","height:300px",[0,1,2]))
   
   #slide1 test
