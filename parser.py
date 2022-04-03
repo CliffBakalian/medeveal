@@ -1,5 +1,5 @@
 import re
-
+import generator
 '''
 The regexes for certain things. This is ultimately gross and I 
 need a more efficient way of doing this
@@ -9,16 +9,17 @@ need a more efficient way of doing this
 # newline_re = re.compile("^\r?\n$") # no longer needed
 
 # formatting
-style_re = re.compile("(#\s?(([\w\-]+:[\w\-%]+;)+))") #gross
-properties_re = re.compile("(((\-[0-9a-zA-Z_\-]+)\s?)+)$") #gross
-property_re = re.compile("(((-[\w\-]+)\s?)+)$") #take properties from properties
-fragment_re = re.compile("^\s*?`match(:([0-9]+))?") #fragment with number
+data_re = re.compile("(`\s*match[^`]*`)?\s*(.*)") #gross
+style_re = re.compile("(`#\s?(([\w\-]+:[\w\-%]+;)+)`)") #gross
+properties_re = re.compile("\s`(((\-[0-9a-zA-Z_\-=']+)\s?)+)`\s*$") #gross
+property_re = re.compile("(\s|`)-([0-9a-zA-Z_\-=']+)(\s|`\s*$)") #take properties from properties
+fragment_re = re.compile("^\s*`match(:\s?([0-9]+))?`") #fragment with number
 
 # things in slides
 image_rs = re.compile("`src=[\w\-\.\"'\\\/]*`") #images
 latex_re = re.compile("\$\$(.*?)\$\$") #for latex equations
 header_re = re.compile("^\s*?# (\w+)") #titles for slides, I use h3
-inline_fragment_re = re.compile("<frag (.*?)( type:([a-zA-Z\-]+))?>")
+inline_fragment_re = re.compile("<frag (.*)( type:([a-zA-Z\-]+))?>")
 span_re = re.compile("<span (.*?)( class:([a-zA-Z\-]+))?>") #inline changes like color
 
 #markdown syntax
@@ -44,23 +45,106 @@ def remove_newline(line):
     line[:-1]
   return line
 
-def parse_roadmap(f):
+def parse_content(line):
+  f = re.search(data_re,line)
+  if f != None:
+    content = f.group(2)
+    style_idx = content.find("`#")
+    if style_idx != -1:
+      return content[0:style_idx]
+    prop_idx = content.find("`-")
+    if prop_idx != -1:
+      return content[0:prop_idx]
+    return content
+  return ""
+
+def parse_fragment(line):
+  properties = [False,-1]
+  f = re.search(fragment_re, line)
+  if f != None:
+    properties[0] = (True)
+    f_id = f.group(2) 
+    if f_id != None:
+      properties[1] = int(f_id)    
+  return properties
+
+def parse_style(line):
+  style = ""
+  f = re.search(style_re, line)
+  if f != None:
+    f_style = f.group(2) 
+    if f_style != None:
+      style =(str(f_style))
+  return style
+
+def parse_properties(line):
+  properties = []
+  f = re.search(properties_re,line)
+  if f != None:
+    ps = f.group(0)
+    while len(ps) > 2:
+      prop = re.search(property_re,ps)
+      extract = prop.group(2)
+      properties.append(extract)
+      ps = ps[ps.find(extract)+len(extract):]
+  return properties
+
+def parse_line(line):
+  data = parse_content(line)
+  style = parse_style(line)
+  properties = parse_properties(line)
+  fragments= parse_fragment(line)
+  return data,properties,style,fragments
+   
+  
+# parse an entire slide making list of all data lines, properties, and style per line
+def parse_slide(f):
   line = f.readline()
-  rm = []
-  while re.match(end_slide_re,line) != None:
-    (lambda x: rm.append(x) if x != "" else None)(remove_newline(line))
-  return rm
+  data= []
+  properties = []
+  style = []
+  fragments = []
+  while re.search(end_slide_re,line) == None:
+    line_data = ""
+    line_properties=[]
+    line_style=""
+    line_frag = [False,-1]
+    line_id = -1
+    x = remove_newline(line)
+    if x != "":
+      line_data,line_properties,line_style,line_frag = parse_line(x)
+    data.append(line_data)
+    if line_frag[1] != -1:
+      line_properties.append("data-id="+str(line_frag[1]))
+    properties.append(line_properties)
+    style.append(line_style) 
+    fragments.append(line_frag[0])
+    line = f.readline()
+  return data,properties,style,fragments
+
+def parse_gen_slide(f):
+  data,properties,style,fragments = parse_slide(f)
+  return generator.generate_gen_slide(data,properties,style,fragments)
+
+def parse_roadmap(f):
+  data,properties,style,_ = parse_slide(f)
+  return generator.generate_roadmap_slide("test",data,['purple','blue','green','orange'],properties,style)
 
 def parse_title(f):
-  line = f.readline()
-  rm = []
-  while re.match(end_slide_re,line) != None:
-    (lambda x: rm.append(x) if x != "" else None)(remove_newline(line))
-  return rm
+  data,properties,style,_ = parse_slide(f)
+  for idx,line in enumerate(data):
+    if line[0] != "`":
+      return generator.generate_title_slide(data,properties,style,idx)  
+  return generator.generate_title_slide(data,properties,style,-1)  
 
 def parse_pow(f):
  line = f.readline()
- rm = []
 
-def parse_regex(f):
-  line = 
+r = open("tests/test.road")
+print(parse_roadmap(r))
+t = open("tests/test.title")
+print(parse_title(t))
+b = open("tests/test.bore")
+print(parse_gen_slide(b))
+c = open("tests/test.complex")
+print(parse_gen_slide(c))

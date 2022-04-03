@@ -143,12 +143,12 @@ Slide Styles
 
 #ROADMAP
 
-def generate_roadmap_slide(title,roadmap,colors,shape="diamond",connect=True):
+def generate_roadmap_slide(title,roadmap,colors,properties=[[]],style=[''],shape="diamond",connect=True):
   title_attr =generate_text(title,"h3",[],[],False,-1,"",-1,"") 
-  body = title_attr+generate_roadmap(roadmap,colors,shape,connect)
+  body = title_attr+generate_roadmap(roadmap,colors,properties,style,shape,connect)
   return generate_slide(body,["data-auto-animate","data-auto-animate-unmatched='fade-up'"],"height:600px",[])
 
-def generate_roadmap(text,colors,shape="diamond",connect=True):
+def generate_roadmap(text,colors,properties,style,shape="diamond",connect=True):
   roadmap = ""
   curr_bullet =""
   distance = 80
@@ -158,7 +158,7 @@ def generate_roadmap(text,colors,shape="diamond",connect=True):
       if idx != 0 and connect:
         curr_bullet += generate_shape("rmvline",[],[],True,idx+1,"fade-down",-1,"top:"+str(base)+"px;")
       curr_bullet += generate_shape(shape,[],[],True,idx+1,"",idx+1,"background:"+colors[idx]+";top:"+str(base+(distance/2))+"px;")
-      curr_bullet += generate_text(value,"div",[],["rm-data"],True,idx+1,"fade-down",-1,"top:"+str(base+33)+"px;")
+      curr_bullet += generate_text(value,"div",properties[idx],["rm-data"]+[style[idx]],True,idx+1,"fade-down",-1,"top:"+str(base+33)+"px;")
       base+=distance
       roadmap+=curr_bullet
       curr_bullet=""
@@ -170,6 +170,18 @@ def generate_roadmap(text,colors,shape="diamond",connect=True):
   return roadmap
 
 #TITLE
+def generate_title_slide(data,properties,style,title_idx,order=[0,1,2]):
+  body =""
+  for idx,content in enumerate(data):
+    if content[0] == "`":
+      body += generate_img(content[5:-1],properties[idx],[],False,-1,"",-1,style[idx])
+    elif idx == title_idx:
+      body += generate_text(content,"h1",properties[idx],[],False,-1,"",-1,style[idx]) 
+    else:
+      body += generate_text(content,"h3",properties[idx],[],False,-1,"",-1,style[idx]) 
+  return generate_slide(body,["data-auto-animate","data-auto-animate-unmatched='fade-up'"],"",[])
+
+'''
 def generate_title_slide(title,subtitle,img="",title_style="",subtitle_style="",img_style="",order=[0,1,2]):
   title_attr =generate_text(title,"h1",[],[],False,-1,"",-1,title_style) 
   subtitle_attr = generate_text(subtitle,"h3",[],[],False,-1,"",-1,subtitle_style)
@@ -178,6 +190,14 @@ def generate_title_slide(title,subtitle,img="",title_style="",subtitle_style="",
   body = ""
   for i in order:
     body += attrs[i]   
+  return generate_slide(body,["data-auto-animate","data-auto-animate-unmatched='fade-up'"],"",[])
+'''
+
+#GENERIC
+def generate_gen_slide(data,properties,style,fragments):
+  body = ""
+  for idx,content in enumerate(data):
+    body += generate_text(content,"p",properties[idx],[],fragments[idx],-1,"",-1,style[idx])
   return generate_slide(body,["data-auto-animate","data-auto-animate-unmatched='fade-up'"],"",[])
 
 #DOTS 
@@ -201,11 +221,10 @@ def generate_split_slide(body1,body2,width1=50,width2=50):
 
 '''
 TIME TO EXPORT
-'''
 # WRITE TO FILE 
 def generate_slides(src_file):
   #TODO actually have to write the parser lol
-  rm = (generate_roadmap_slide("sets, functions, relations",["person of the week","countability","set proofs"],["purple","blue","orange"],"rm-diamond",True))
+  rm = (generate_roadmap_slide("sets, functions, relations",["person of the week","countability","set proofs"],["purple","blue","orange"],[[]],[[]],"rm-diamond",True))
   tit =(generate_title_slide("CMSC250","sets, functions, relations","dist/assets/funcpun.jpeg","","","height:300px",[0,1,2]))
   
   #slide1 test
@@ -236,6 +255,7 @@ def generate_slides(src_file):
   return generate_html(refs,tit+rm+slide1+slide2+slide3)
 
 f = open("myslides.html", "w")
-slides_to_make = raw_input("file name: ")
+slides_to_make = input("file name: ")
 f.write(generate_slides(slides_to_make))
 f.close()
+'''
