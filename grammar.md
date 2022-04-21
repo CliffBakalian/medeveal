@@ -1,6 +1,7 @@
 \e empty string
 
 P -> SP|S
+W -> ### slidetype ###\nS\n### END ###
 S -> LS|L
 L -> + M|D. M|M
 D -> digit
