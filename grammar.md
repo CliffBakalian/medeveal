@@ -9,9 +9,9 @@ M -> F C S E B
 F -> `match:D` |`match`|\e
 S -> `# P`|\e
 R -> style:val;R|style:val;
-E -> `G`
+E -> `G`|\e
 G -> -property G|-property
-B -> `H`
+B -> `H`|\e
 H -> --class H|--class
 C -> I N|J C|K C|T C|U C
 I -> #|##|###|####|#####|######
